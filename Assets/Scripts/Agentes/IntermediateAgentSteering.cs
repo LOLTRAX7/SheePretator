@@ -10,13 +10,13 @@ public class IntermediateAgentSteering : Agent
     [SerializeField] private float _minDistance = 0.1f;   // Distancia mínima para considerar que ya llegó
 
     [Header("Flocking")]
-    [SerializeField] private float _separationRadius = 10f; // Radio de vecinos para Separation
-    [SerializeField] private float _cohesionRadius = 10f;    // Radio de vecinos para Cohesion
-    [SerializeField] private float _alignmentRadius = 10f;   // Radio de vecinos para Alignment
+    [SerializeField] private float _separationRadius = 5f; // Radio de vecinos para Separation
+    [SerializeField] private float _cohesionRadius = 5f;    // Radio de vecinos para Cohesion
+    [SerializeField] private float _alignmentRadius = 5f;   // Radio de vecinos para Alignment
 
-    [SerializeField, Range(0f, 3f)] private float separationWeight = 5f; // Peso de Separation dentro de Flocking
-    [SerializeField, Range(0f, 3f)] private float cohesionWeight = 5f;   // Peso de Cohesion dentro de Flocking
-    [SerializeField, Range(0f, 3f)] private float alignmentWeight = 5f;  // Peso de Alignment dentro de Flocking
+    [SerializeField, Range(0f, 3f)] private float separationWeight = 3f; // Peso de Separation dentro de Flocking
+    [SerializeField, Range(0f, 3f)] private float cohesionWeight = 3f;   // Peso de Cohesion dentro de Flocking
+    [SerializeField, Range(0f, 3f)] private float alignmentWeight = 3f;  // Peso de Alignment dentro de Flocking
 
     private static List<Agent> allAgents = new List<Agent>(); // Lista compartida por todos los agentes de la escena
 
