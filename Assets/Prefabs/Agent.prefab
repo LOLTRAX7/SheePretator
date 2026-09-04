@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 2609598243374884770}
   - component: {fileID: 3723989713495992741}
   - component: {fileID: 7617603407507634579}
-  - component: {fileID: 4144634918687202283}
   - component: {fileID: 301618244978389381}
+  - component: {fileID: 4285743120121203156}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -116,30 +116,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4144634918687202283
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2066313899868212812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d100d928dd30a6c4ea165555ba669547, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IntermediateAgentSteering
-  _maxSpeed: 3
-  _maxSteering: 3
-  _slowingDistance: 3
-  _minDistance: 0.1
-  _separationRadius: 5
-  _cohesionRadius: 5
-  _alignmentRadius: 5
-  separationWeight: 3
-  cohesionWeight: 3
-  alignmentWeight: 3
-  _target: {fileID: 0}
-  currentSteering: 0
 --- !u!54 &301618244978389381
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -162,8 +138,30 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &4285743120121203156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2066313899868212812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b836c5a17953f54f8ca49e555cf943d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FSMAgent
+  _speed: 3
+  _patrolData:
+    waypoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    transform: {fileID: 1131048661296537880}
+    waypointCheckDistance: 0.1
+  HealthPoints: 100

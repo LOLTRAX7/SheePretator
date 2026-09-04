@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Agente quieto, esperando antes de volver a patrullar.
+// Estado en el que el agente permanece quieto durante un tiempo antes de volver a patrullar.
 public class IdleState : State<FSMAgent.States>
 {
     readonly float _timeToChangeToPatrol = 3f;
@@ -8,22 +8,29 @@ public class IdleState : State<FSMAgent.States>
 
     public override void Enter()
     {
-        Debug.LogError("Entre a Idle");
+        Debug.Log("Entre a Idle");
+
+        // Cada vez que la FSM entra en Idle, el contador vuelve a cero para empezar
+        // nuevamente a contar los tres segundos.
         _timer = 0f;
     }
 
     public override void Update()
     {
+        // El contador avanza mientras este estado está activo.
         _timer += Time.deltaTime;
+
+        // Cuando se cumple el tiempo, Idle le pide a la FSM que cambie a Patrol.
         if(_timer >= _timeToChangeToPatrol)
         {
-            _fsm.ChangeState(FSMAgent.States.Patrol); // el propio estado pide el cambio
+            _fsm.ChangeState(FSMAgent.States.Patrol);
         }
     }
 
     public override void Exit()
     {
-        Debug.LogError("Sali de idle");
+        // Se ejecuta justo antes de abandonar Idle.
+        Debug.Log("Sali de idle");
     }
 
 }
