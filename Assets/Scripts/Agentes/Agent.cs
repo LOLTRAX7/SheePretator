@@ -9,4 +9,15 @@ public class Agent : MonoBehaviour
     // Permite que otros scripts consulten la velocidad actual sin modificarla.
     // Se usa, por ejemplo, para calcular Pursuit, Evade o Flocking.
     public Vector3 Velocity => _velocity;
+
+    // Si el objeto tiene Rigidbody, lo deja en modo Kinematic para que no
+    // compita con el movimiento manual por transform.position.
+    protected void DisablePhysicsInterference()
+    {
+        if (TryGetComponent(out Rigidbody rb))
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+    }
 }

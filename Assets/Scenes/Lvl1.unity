@@ -931,7 +931,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2066313899868212812, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: m_Name
-      value: Agent
+      value: Hunter
       objectReference: {fileID: 0}
     - target: {fileID: 4285743120121203156, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: '_patrolData.waypoints.Array.data[0]'
