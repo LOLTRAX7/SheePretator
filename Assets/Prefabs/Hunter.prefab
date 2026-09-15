@@ -175,7 +175,7 @@ MonoBehaviour:
   <TBA>k__BackingField: 1
   <RangeAttackRadius>k__BackingField: 0.6
   <MeleeAttackRadius>k__BackingField: 2
-  meleeDamage: 34
+  meleeDamage: 40
   rangedDamage: 20
   attackPreparationTime: 0.7
   gatherInteractionRadius: 1.2
