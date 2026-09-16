@@ -285,12 +285,12 @@ MonoBehaviour:
   interestPointPlaceDuration: 2
   perceptionRadius: 8
   perceptionLossMargin: 3
-  <TBA>k__BackingField: 5
-  <RangeAttackRadius>k__BackingField: 2
-  <MeleeAttackRadius>k__BackingField: 2
-  meleeDamage: 40
+  <TBA>k__BackingField: 2
+  <RangeAttackRadius>k__BackingField: 1.5
+  <MeleeAttackRadius>k__BackingField: 4
+  meleeDamage: 50
   rangedDamage: 20
-  attackPreparationTime: 0.7
+  attackPreparationTime: 1
   gatherInteractionRadius: 1.2
   gatherDuration: 2
   boidRespawnDelay: 5

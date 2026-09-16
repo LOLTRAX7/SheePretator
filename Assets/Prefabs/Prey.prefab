@@ -163,7 +163,7 @@ MonoBehaviour:
   separationWeight: 1.6
   alignmentWeight: 1
   cohesionWeight: 1
-  hunterVisionRadius: 6
+  hunterVisionRadius: 8
   evadeWeight: 2.2
   threatLossMargin: 1.5
   separationWeightWhileEvading: 0.35
@@ -173,7 +173,7 @@ MonoBehaviour:
   arriveWeight: 1.4
   harvestInterval: 1
   harvestDamage: 10
-  maxHealth: 80
+  maxHealth: 100
   feedbackRenderer: {fileID: 6722951879059884253}
   evadeColor: {r: 1, g: 0.55, b: 0, a: 1}
   harvestColor: {r: 0.36902356, g: 1, b: 0.2980392, a: 1}
