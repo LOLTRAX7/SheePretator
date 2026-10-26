@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d311dbbea48316f4bb10cc41445a763a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InterestPoint
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::InterestPoint
   maxDurability: 30
   feedbackRenderer: {fileID: 0}

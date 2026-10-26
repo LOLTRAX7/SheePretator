@@ -8,6 +8,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 90000004}
+  - component: {fileID: 90000003}
+  - component: {fileID: 90000002}
+  - component: {fileID: 90000001}
   - component: {fileID: 6726617911536716475}
   - component: {fileID: 6821018180337493148}
   - component: {fileID: 6722951879059884253}
@@ -154,30 +158,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8cef2a7c205f2a4b96cff2d3e04a20e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoidAgent
-  maxSpeed: 4
-  maxForce: 6
-  separationRadius: 2
-  neighborRadius: 5
-  separationWeight: 1.6
-  alignmentWeight: 1
-  cohesionWeight: 1
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::BoidAgent
   hunterVisionRadius: 8
-  evadeWeight: 2.2
-  threatLossMargin: 1.5
-  separationWeightWhileEvading: 0.35
   poiVisionRadius: 10
-  arriveSlowingDistance: 3
-  arriveMinDistance: 1.2
-  arriveWeight: 1.4
   harvestInterval: 1
   harvestDamage: 10
-  maxHealth: 100
-  feedbackRenderer: {fileID: 6722951879059884253}
-  evadeColor: {r: 1, g: 0.55, b: 0, a: 1}
-  harvestColor: {r: 0.36902356, g: 1, b: 0.2980392, a: 1}
-  eliminatedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &5113997138339992319
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,3 +276,58 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+
+--- !u!114 &90000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bd53ca3edef45acab447a9ed04d496a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::BoidHealth
+
+
+--- !u!114 &90000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3560a6e1163244689b94cc0e632b7b07, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::AgentFeedback
+
+
+--- !u!114 &90000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e28db9bb27fc48308b14d0493b5bf0cd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::ProximitySensor
+
+
+--- !u!114 &90000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd68d4222684075854909bba1b5201a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: SheePretator.Runtime::BoidSteering

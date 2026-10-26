@@ -1,29 +1,25 @@
 using UnityEngine;
 
-
 public class BoidSpawner : MonoBehaviour
 {
     [SerializeField] private BoidAgent boidPrefab;
-    [SerializeField] private int count = 8;
-
+    [SerializeField, Min(6)] private int count = 8;
     private void Start()
     {
-        if (boidPrefab == null)
+        if (boidPrefab == null || Bounds.Instance == null)
         {
-            Debug.LogWarning("[BoidSpawner] No se asignó un prefab de BoidAgent.", this);
+            Debug.LogError("Asignar prefab del boid y un Bounds en la escena.", this);
             return;
         }
-
-        if (Bounds.Instance == null)
+        for (int i = 0; i < Mathf.Max(6, count); i++)
         {
-            Debug.LogWarning("[BoidSpawner] No hay un objeto Bounds en la escena.", this);
-            return;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            Vector3 spawnPosition = Bounds.Instance.GetRandomPointInside();
-            Instantiate(boidPrefab, spawnPosition, Quaternion.identity);
+            if (!Bounds.Instance.TryGetFreePoint(out Vector3 position))
+            {
+                Debug.LogError("No hay espacio para generar todos los boids.", this);
+                break;
+            }
+            Instantiate(boidPrefab, position, Quaternion.identity);
+            Physics.SyncTransforms();
         }
     }
 }
