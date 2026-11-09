@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 491577386173067684}
   - component: {fileID: 3336211202128664983}
   - component: {fileID: -6354318403352703743}
+  - component: {fileID: 810000000000000000}
   m_Layer: 0
   m_Name: InterestPoint
   m_TagString: Untagged
@@ -125,7 +126,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d311dbbea48316f4bb10cc41445a763a, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::InterestPoint
   maxDurability: 30
   feedbackRenderer: {fileID: 0}
+--- !u!114 &810000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9182080968409345651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d42385c100a445cc96477498ffd2d13d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AgentFeedback
+  feedbackRenderer: {fileID: 0}
+  showText: 1

@@ -1,276 +1,148 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class HunterAgent : Agent
 {
-    public enum HunterState { Patrol, Attack, Gather }
-
-    [Header("Movimiento")]
-    [SerializeField] private float moveSpeed = 4.5f;
-
-    [Header("Patrulla")]
+    public enum HunterState { Patrol, Hunt, Gather, Rest }
+    [SerializeField, Min(0.1f)] private float moveSpeed = 8f;
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
-    [SerializeField] private float waypointArrivalDistance = 0.4f;
-    [SerializeField] private bool pingPongPatrol = false;
-
-    [Header("Objetos de interés")]
+    [SerializeField, Min(0.05f)] private float waypointArrivalDistance = 0.4f;
+    [SerializeField] private bool pingPongPatrol = true;
     [SerializeField] private InterestPoint interestPointPrefab;
-    [SerializeField] private float poiSpawnInterval = 4f;
-    [SerializeField] private int maxActiveInterestPoints = 5;
-    [SerializeField] private float interestPointPlaceDuration = 2f;
+    [SerializeField, Min(0.1f)] private float poiSpawnInterval = 4f;
+    [SerializeField, Range(1, 5)] private int maxActiveInterestPoints = 5;
+    [SerializeField, Min(0.1f)] private float perceptionRadius = 8f;
+    [field: SerializeField, Min(0.01f)] public float TBA { get; private set; } = 2f;
+    [field: SerializeField, Min(0.2f)] public float RangeAttackRadius { get; private set; } = 5f;
+    [field: SerializeField, Min(0.1f)] public float MeleeAttackRadius { get; private set; } = 1.5f;
+    [SerializeField, Min(0.1f)] private float gatherInteractionRadius = 1.2f;
+    [SerializeField, Min(0.01f)] private float gatherDuration = 2f;
+    [SerializeField, Min(0f)] private float boidRespawnDelay = 5f;
 
-    [Header("Percepción")]
-    [SerializeField] private float perceptionRadius = 8f;
-    [SerializeField] private float perceptionLossMargin = 2f;
-
-    [Header("Variables obligatorias del Cazador")]
-    [field: SerializeField] public float TBA { get; private set; } = 5f;
-    [field: SerializeField] public float RangeAttackRadius { get; private set; } = 5f;
-    [field: SerializeField] public float MeleeAttackRadius { get; private set; } = 1.5f;
-
-    [Header("Daño")]
-    [SerializeField] private float meleeDamage = 34f;
-    [SerializeField] private float rangedDamage = 20f;
-
-    [Header("Ataque")]
-    [SerializeField] private float attackPreparationTime = 0.7f;
-    public float AttackPreparationTime => attackPreparationTime;
-
-    [Header("Recolección (Gather)")]
-    [SerializeField] private float gatherInteractionRadius = 1.2f;
-    [SerializeField] private float gatherDuration = 2f;
-    [SerializeField] private float boidRespawnDelay = 5f;
-
-    [Header("Feedback visual/funcional")]
-    [SerializeField] private Renderer feedbackRenderer;
-    [SerializeField] private Color patrolColor = Color.white;
-    [SerializeField] private Color attackColor = Color.red;
-    [SerializeField] private Color gatherColor = Color.yellow;
-    [SerializeField] private bool showOnScreenDebug = true;
-
-    public static readonly List<HunterAgent> All = new List<HunterAgent>();
-
-    private readonly FiniteStateMachine<HunterState> _fsm = new();
-    private float _attackCooldown;
-
-    private HunterState _debugState;
-    private string _debugTarget = "-";
-    private string _debugAction = "-";
-
+    private readonly FiniteStateMachine<HunterState> fsm = new FiniteStateMachine<HunterState>();
+    private float attackCooldown;
+    private string action = "";
+    private BoidAgent displayedTarget;
+    public HunterState CurrentState => fsm.CurrentState;
+    public HunterEnergy Energy { get; private set; }
     public List<Transform> Waypoints => waypoints;
     public float WaypointArrivalDistance => waypointArrivalDistance;
     public bool PingPongPatrol => pingPongPatrol;
-    public float PerceptionRadius => perceptionRadius;
-    public float PerceptionLossRadius => perceptionRadius + perceptionLossMargin;
+    public float VisionRadius => perceptionRadius;
     public float PoiSpawnInterval => poiSpawnInterval;
-    public float InterestPointPlaceDuration => interestPointPlaceDuration;
     public float GatherInteractionRadius => gatherInteractionRadius;
     public float GatherDuration => gatherDuration;
     public float BoidRespawnDelay => boidRespawnDelay;
-    public bool IsAttackReady => _attackCooldown <= 0f;
-
-    private void OnEnable() => All.Add(this);
-    private void OnDisable() => All.Remove(this);
+    public bool IsAttackReady => attackCooldown <= 0f;
 
     private void Awake()
     {
-        DisablePhysicsInterference();
-    }
-
-    private void Start()
-    {
-        var patrol = new HunterPatrolState(this);
-        var attack = new HunterAttackState(this);
-        var gather = new HunterGatherState(this);
-
-        _fsm.AddState(HunterState.Patrol, patrol);
-        _fsm.AddState(HunterState.Attack, attack);
-        _fsm.AddState(HunterState.Gather, gather);
-
-        _fsm.ChangeState(HunterState.Patrol);
+        InitializeAgent();
+        Energy = GetComponent<HunterEnergy>();
+        if (Energy == null) Energy = gameObject.AddComponent<HunterEnergy>();
+        fsm.AddState(HunterState.Patrol, new HunterPatrolState(this));
+        fsm.AddState(HunterState.Hunt, new HunterHuntState(this));
+        fsm.AddState(HunterState.Gather, new HunterGatherState(this));
+        fsm.AddState(HunterState.Rest, new HunterRestState(this));
+        fsm.ChangeState(HunterState.Patrol);
     }
 
     private void Update()
     {
-        if (_attackCooldown > 0f)
-            _attackCooldown -= Time.deltaTime;
-
-        _fsm.Update();
+        // El tiempo entre ataques sigue pasando en todos los estados.
+        attackCooldown = Mathf.Max(0f, attackCooldown - Time.deltaTime);
+        sensor.Scan(perceptionRadius);
+        fsm.Update();
+        UpdateFeedback();
     }
 
     public void MoveTowards(Vector3 targetPosition)
     {
-        Vector3 direction = targetPosition - transform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude < 0.0001f)
-        {
-            StopMoving();
-            return;
-        }
-
-        _velocity = direction.normalized * moveSpeed;
-        transform.position += _velocity * Time.deltaTime;
-        transform.forward = direction.normalized;
+        float distance = Vector3.Distance(transform.position, targetPosition);
+        float speed = Mathf.Min(moveSpeed, distance / Mathf.Max(Time.deltaTime, 0.0001f));
+        Move(DesiredVelocity(targetPosition, speed), false);
     }
 
-    public void StopMoving() => _velocity = Vector3.zero;
+    public void Pursue(BoidAgent target) => MoveTowards(PredictPosition(target, moveSpeed));
+    public BoidAgent FindNearestLiveBoid() => FindNearestBoid(false);
+    public BoidAgent FindNearestEliminatedBoid() => FindNearestBoid(true);
 
-    public BoidAgent FindNearestLiveBoid() => FindNearestBoid(b => !b.IsEliminated);
-
-    public BoidAgent FindNearestEliminatedBoid() => FindNearestBoid(b => b.IsEliminated && b.IsPendingGather);
-
-    private BoidAgent FindNearestBoid(Func<BoidAgent, bool> matches)
+    private BoidAgent FindNearestBoid(bool eliminated)
     {
         BoidAgent nearest = null;
-        float nearestDist = perceptionRadius;
-
-        foreach (var boid in BoidAgent.All)
+        float distance = perceptionRadius;
+        foreach (BoidAgent boid in sensor.Boids)
         {
-            if (!matches(boid))
-                continue;
-
-            float dist = Vector3.Distance(transform.position, boid.transform.position);
-
-            if (dist <= nearestDist)
-            {
-                nearest = boid;
-                nearestDist = dist;
-            }
+            if (!sensor.InRange(boid, distance)) continue;
+            if (eliminated ? !boid.IsPendingGather : boid.IsEliminated) continue;
+            nearest = boid;
+            distance = Vector3.Distance(transform.position, boid.transform.position);
         }
-
         return nearest;
     }
 
-    public int CountLiveBoidsInPerception()
+    public void PerformMeleeAttack(BoidAgent target) => Attack(target, 2, MeleeAttackRadius);
+    public void PerformRangedAttack(BoidAgent target) => Attack(target, 1, RangeAttackRadius);
+
+    private void Attack(BoidAgent target, int hits, float radius)
     {
-        int count = 0;
-
-        foreach (var boid in BoidAgent.All)
-        {
-            if (!boid.IsEliminated &&
-                Vector3.Distance(transform.position, boid.transform.position) <= perceptionRadius)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public int CountPendingGatherBoidsInPerception()
-    {
-        int count = 0;
-
-        foreach (var boid in BoidAgent.All)
-        {
-            if (boid.IsEliminated &&
-                boid.IsPendingGather &&
-                Vector3.Distance(transform.position, boid.transform.position) <= perceptionRadius)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public void ResetAttackTimer() => _attackCooldown = TBA;
-
-    public void PerformMeleeAttack(BoidAgent target)
-    {
-        _debugAction = $"Ataque cuerpo a cuerpo a {target.name}";
-        Debug.Log($"[Cazador] {_debugAction}");
-
-        target.TakeDamage(meleeDamage);
-        ResetAttackTimer();
-    }
-
-    public void PerformRangedAttack(BoidAgent target)
-    {
-        _debugAction = $"Ataque a distancia a {target.name}";
-        Debug.Log($"[Cazador] {_debugAction}");
-
-        target.TakeDamage(rangedDamage);
-        ResetAttackTimer();
+        if (!IsAttackReady || target == null || target.IsEliminated || !sensor.InRange(target, radius)) return;
+        target.TakeDamage(hits);
+        attackCooldown = TBA;
+        action = hits == 2 ? "Ataque cuerpo a cuerpo" : "Ataque a distancia";
+        Debug.Log($"[Cazador] {action} a {target.name}. Golpes: {hits}.");
     }
 
     public bool HasRoomForInterestPoint()
     {
-        if (interestPointPrefab == null)
-            return false;
-
-        return InterestPoint.ActivePoints.Count < maxActiveInterestPoints;
+        return interestPointPrefab != null && InterestPoint.ActiveCount < Mathf.Min(5, maxActiveInterestPoints);
     }
 
     public void SpawnInterestPointAtCurrentPosition()
     {
-        if (interestPointPrefab == null)
-            return;
-
-        if (!HasRoomForInterestPoint())
-            return;
-
-        Vector3 spawnPos = transform.position;
-
-        Instantiate(interestPointPrefab, spawnPos, Quaternion.identity);
-
-        Debug.Log($"[Cazador] Genera un objeto de interés en {spawnPos}.");
-    }
-
-    public void SetFeedback(HunterState state, BoidAgent target = null, string action = null)
-    {
-        _debugState = state;
-        _debugTarget = target != null ? target.name : "-";
-
-        if (action != null)
-            _debugAction = action;
-        else if (target == null)
-            _debugAction = "-";
-
-        if (feedbackRenderer == null)
-            return;
-
-        Color color = state switch
+        if (!HasRoomForInterestPoint()) return;
+        Vector3 position = transform.position;
+        foreach (Collider hit in Physics.OverlapSphere(position, 1.1f))
         {
-            HunterState.Attack => attackColor,
-            HunterState.Gather => gatherColor,
-            _ => patrolColor
-        };
-
-        feedbackRenderer.material.color = color;
+            if (hit.GetComponentInParent<BoidAgent>() != null || hit.GetComponentInParent<InterestPoint>() != null) return;
+        }
+        Instantiate(interestPointPrefab, position, Quaternion.identity);
+        Physics.SyncTransforms();
     }
 
-    private void OnGUI()
+    public void SetFeedback(HunterState state, BoidAgent target = null, string action = "")
     {
-        if (!showOnScreenDebug)
-            return;
+        displayedTarget = target;
+        this.action = action;
+    }
 
-        int liveDetected = CountLiveBoidsInPerception();
-        int pendingDetected = CountPendingGatherBoidsInPerception();
+    private void UpdateFeedback()
+    {
+        string state = "Patrullando";
+        Color color = Color.white;
+        switch (CurrentState)
+        {
+            case HunterState.Hunt: state = "Cazando"; color = Color.red; break;
+            case HunterState.Gather: state = "Recolectando"; color = Color.yellow; break;
+            case HunterState.Rest: state = "Descansando"; color = Color.cyan; break;
+        }
+        string target = displayedTarget != null ? displayedTarget.name : "-";
+        feedback.Set($"Cazador: {state} | Energia: {Energy.Current:0}/{Energy.Maximum:0}\nObjetivo: {target} | {action}", color);
+    }
 
-        GUI.Label(
-            new Rect(10, 10, 360, 130),
-            $"Cazador\nEstado: {_debugState}\nObjetivo: {_debugTarget}\nAgentes detectados: {liveDetected} vivos / {pendingDetected} caídos\nÚltima acción: {_debugAction}\nTBA listo: {IsAttackReady}"
-        );
+    private void OnValidate()
+    {
+        RangeAttackRadius = Mathf.Max(0.2f, RangeAttackRadius);
+        MeleeAttackRadius = Mathf.Clamp(MeleeAttackRadius, 0.1f, RangeAttackRadius - 0.05f);
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, perceptionRadius);
-
-        Gizmos.color = new Color(0f, 0.6f, 0.6f, 0.5f);
-        Gizmos.DrawWireSphere(transform.position, PerceptionLossRadius);
-
         Gizmos.color = new Color(1f, 0.55f, 0f);
         Gizmos.DrawWireSphere(transform.position, RangeAttackRadius);
-
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, MeleeAttackRadius);
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, gatherInteractionRadius);
     }
 }

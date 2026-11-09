@@ -14,6 +14,9 @@ GameObject:
   - component: {fileID: 6280446851556930783}
   - component: {fileID: 5540310589194814959}
   - component: {fileID: 7020371896297606288}
+  - component: {fileID: 810000000000000000}
+  - component: {fileID: 810000000000000001}
+  - component: {fileID: 810000000000000002}
   m_Layer: 0
   m_Name: Prey
   m_TagString: Untagged
@@ -154,7 +157,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8cef2a7c205f2a4b96cff2d3e04a20e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::BoidAgent
   maxSpeed: 4
   maxForce: 6
@@ -290,3 +293,43 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &810000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c2e22d976154a11892286c07b22004d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ProximitySensor
+  interval: 0.15
+--- !u!114 &810000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d42385c100a445cc96477498ffd2d13d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AgentFeedback
+  feedbackRenderer: {fileID: 6722951879059884253}
+  showText: 1
+--- !u!114 &810000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461370965306735897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5e14ad5b0c94a21b5d005fbda33e8ab, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::BoidHealth
+  maxHits: 2

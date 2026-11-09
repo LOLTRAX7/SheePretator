@@ -6,6 +6,7 @@ using UnityEngine;
 public class FiniteStateMachine<T>
 {
     private State<T> _currentState;
+    public T CurrentState { get; private set; }
     private readonly Dictionary<T, State<T>> _allStates = new();
 
     public void AddState(T ID, State<T> state)
@@ -33,6 +34,7 @@ public class FiniteStateMachine<T>
         // y finalmente entra al nuevo estado.
         _currentState?.Exit();
         _currentState = _allStates[ID];
+        CurrentState = ID;
         _currentState.Enter();
     }
 

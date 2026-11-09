@@ -1,47 +1,63 @@
 using UnityEngine;
 
-
 public class Bounds : MonoBehaviour
 {
     public static Bounds Instance { get; private set; }
+    [SerializeField, Min(2f)] private float height = 30f;
+    [SerializeField, Min(2f)] private float width = 60f;
+    [SerializeField] private bool drawGizmos = true;
 
-    [SerializeField] private float height = 30f;
-    [SerializeField] private float width = 60f;
-    [SerializeField] private bool drawGizmos;
-
-    private void Awake()
+    private void Awake() => Instance = this;
+    private void OnDestroy()
     {
-        
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == this) Instance = null;
     }
 
-    public Vector3 OutOfBounds(Vector3 position)
+    public bool Contains(Vector3 position)
     {
-        
-        Vector3 newPosition = position;
-
-        if (position.x > width / 2) newPosition.x = -width / 2;
-        if (position.x < -width / 2) newPosition.x = width / 2;
-        if (position.z > height / 2) newPosition.z = -height / 2;
-        if (position.z < -height / 2) newPosition.z = height / 2;
-
-        return newPosition;
+        Vector3 local = position - transform.position;
+        return Mathf.Abs(local.x) <= width * 0.5f && Mathf.Abs(local.z) <= height * 0.5f;
     }
 
-    
+    public Vector3 Clamp(Vector3 position, float margin)
+    {
+        Vector3 center = transform.position;
+        position.x = Mathf.Clamp(position.x, center.x - width * 0.5f + margin, center.x + width * 0.5f - margin);
+        position.z = Mathf.Clamp(position.z, center.z - height * 0.5f + margin, center.z + height * 0.5f - margin);
+        return position;
+    }
+
+    public Vector3 OutOfBounds(Vector3 position) => Clamp(position, 0.5f);
+
     public Vector3 GetRandomPointInside()
     {
-        float x = Random.Range(-width / 2f, width / 2f);
-        float z = Random.Range(-height / 2f, height / 2f);
-        return new Vector3(x, 0f, z);
+        return transform.position + new Vector3(Random.Range(-width * 0.5f, width * 0.5f), 0f,
+            Random.Range(-height * 0.5f, height * 0.5f));
+    }
+
+    public bool TryGetFreePoint(float radius, Agent ignored, float y, out Vector3 position)
+    {
+        for (int attempt = 0; attempt < 40; attempt++)
+        {
+            position = Clamp(GetRandomPointInside(), radius + 0.05f);
+            position.y = y;
+            bool blocked = false;
+            foreach (Collider hit in Physics.OverlapSphere(position, radius + 0.6f))
+            {
+                Agent agent = hit.GetComponentInParent<Agent>();
+                InterestPoint point = hit.GetComponentInParent<InterestPoint>();
+                if ((agent != null && agent != ignored) || point != null) blocked = true;
+            }
+            if (!blocked) return true;
+        }
+        position = default;
+        return false;
     }
 
     private void OnDrawGizmos()
     {
-        
         if (!drawGizmos) return;
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(width, 0, height));
+        Gizmos.DrawWireCube(transform.position, new Vector3(width, 0f, height));
     }
 }
