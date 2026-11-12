@@ -1,7 +1,6 @@
 using UnityEngine;
 
 public enum BoidState { Flocking, Evade, SeekObject, Consume, Dead, Respawn }
-
 public class BoidAgent : Agent
 {
     [SerializeField, Min(0.1f)] private float maxSpeed = 4f;
@@ -22,6 +21,7 @@ public class BoidAgent : Agent
     [SerializeField, Min(0f)] private float respawnDelay = 5f;
 
     private readonly FiniteStateMachine<BoidState> fsm = new FiniteStateMachine<BoidState>();
+
     private BoidHealth health;
     private BoidSteering steering;
     private bool gathered;
@@ -41,19 +41,22 @@ public class BoidAgent : Agent
     public float Force => maxForce;
     public float SeparationRadius => separationRadius;
     public float NeighborRadius => neighborRadius;
-
+    
     private void Awake()
     {
         InitializeAgent();
         health = GetComponent<BoidHealth>();
         if (health == null) health = gameObject.AddComponent<BoidHealth>();
+
         steering = new BoidSteering(this);
+
         fsm.AddState(BoidState.Flocking, new BoidFlockingState(this));
         fsm.AddState(BoidState.Evade, new BoidEvadeState(this));
         fsm.AddState(BoidState.SeekObject, new BoidSeekObjectState(this));
         fsm.AddState(BoidState.Consume, new BoidConsumeState(this));
         fsm.AddState(BoidState.Dead, new BoidDeadState(this));
         fsm.AddState(BoidState.Respawn, new BoidRespawnState(this));
+
         _velocity = RandomDirection() * maxSpeed;
         fsm.ChangeState(BoidState.Flocking);
     }
@@ -64,31 +67,41 @@ public class BoidAgent : Agent
         {
             sensor.Scan(Mathf.Max(neighborRadius, hunterVisionRadius, poiVisionRadius));
             UpdatePerception();
+
         }
+        
         fsm.Update();
         UpdateFeedback();
     }
+
 
     private void UpdatePerception()
     {
         Threat = null;
         float nearest = hunterVisionRadius;
+
         foreach (HunterAgent hunter in sensor.Hunters)
         {
             if (!sensor.InRange(hunter, nearest)) continue;
             Threat = hunter;
+
             nearest = Vector3.Distance(transform.position, hunter.transform.position);
         }
+
         if (HasPoint) return;
         TargetPoint = null;
         nearest = poiVisionRadius;
+
         foreach (InterestPoint point in sensor.Points)
         {
+
             if (point == null || !point.IsAvailable || !sensor.InRange(point, nearest)) continue;
             TargetPoint = point;
+
             nearest = Vector3.Distance(transform.position, point.transform.position);
         }
     }
+
 
     public void Flock()
     {
@@ -96,6 +109,7 @@ public class BoidAgent : Agent
             steering.Cohesion() * cohesionWeight + steering.KeepInsideBounds();
         ApplySteering(force);
     }
+
 
     public void EvadeThreat()
     {
@@ -105,6 +119,7 @@ public class BoidAgent : Agent
             steering.KeepInsideBounds());
     }
 
+
     public void ArriveAtPoint()
     {
         float distance = Vector3.Distance(transform.position, TargetPoint.transform.position);
@@ -113,21 +128,26 @@ public class BoidAgent : Agent
         ApplySteering(Steering(desired, maxForce) + steering.Separation() * separationWeight);
     }
 
+
     private void ApplySteering(Vector3 force)
     {
         Vector3 velocity = Vector3.ClampMagnitude(_velocity + force, maxSpeed);
         Move(velocity, true);
     }
 
+
     public void ConsumePoint() => TargetPoint.TakeDamage(harvestDamage);
     public void TakeDamage(int hits) => health.TakeHits(hits);
-
     public void OnGathered(float delay)
     {
+
+
         if (!IsPendingGather) return;
         respawnDelay = Mathf.Max(0f, delay);
         gathered = true;
+
     }
+
 
     public void Hide() => feedback.SetVisible(false);
 
@@ -136,26 +156,34 @@ public class BoidAgent : Agent
         if (Bounds.Instance == null || !Bounds.Instance.TryGetFreePoint(BodyRadius, this, transform.position.y, out Vector3 position))
             return false;
         transform.position = position;
+
         health.Restore();
         gathered = false;
         TargetPoint = null;
         Threat = null;
+
         _velocity = RandomDirection() * maxSpeed;
         feedback.SetVisible(true);
         Physics.SyncTransforms();
+
         return true;
     }
 
+
     private Vector3 RandomDirection()
     {
+
         Vector3 direction = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f));
         return direction.sqrMagnitude < 0.001f ? Vector3.forward : direction.normalized;
+
     }
+
 
     private void UpdateFeedback()
     {
         string state;
         Color color;
+
         switch (CurrentState)
         {
             case BoidState.Evade: state = "Huyendo"; color = new Color(1f, 0.55f, 0f); break;
@@ -163,26 +191,38 @@ public class BoidAgent : Agent
             case BoidState.Consume: state = "Consumiendo"; color = Color.green; break;
             case BoidState.Dead: state = "Eliminada"; color = Color.gray; break;
             case BoidState.Respawn: state = "Reapareciendo"; color = Color.gray; break;
+
             default: state = "En grupo"; color = Color.white; break;
         }
+
         feedback.Set($"Oveja: {state}\nVida: {health.Current}/2", color);
     }
+
 
     private void OnValidate()
     {
         neighborRadius = Mathf.Max(neighborRadius, 0.2f);
         separationRadius = Mathf.Clamp(separationRadius, 0.1f, neighborRadius - 0.05f);
+
     }
+
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, separationRadius);
+
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, neighborRadius);
+
         Gizmos.color = new Color(1f, 0.55f, 0f);
         Gizmos.DrawWireSphere(transform.position, hunterVisionRadius);
+
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, poiVisionRadius);
     }
+
+
+
+
 }

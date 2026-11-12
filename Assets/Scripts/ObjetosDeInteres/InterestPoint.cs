@@ -9,9 +9,11 @@ public class InterestPoint : MonoBehaviour
     public bool IsAvailable => isActiveAndEnabled && durability > 0f;
     public float BodyRadius { get; private set; } = 0.5f;
 
+
     private void Awake()
     {
         feedback = GetComponent<AgentFeedback>();
+        
         if (feedback == null) feedback = gameObject.AddComponent<AgentFeedback>();
         if (TryGetComponent(out Collider shape))
             BodyRadius = Mathf.Max(shape.bounds.extents.x, shape.bounds.extents.z);
@@ -23,19 +25,22 @@ public class InterestPoint : MonoBehaviour
         durability = maxDurability;
         UpdateFeedback();
     }
-    private void OnDisable() => ActiveCount--;
 
+
+    private void OnDisable() => ActiveCount--;
     public void TakeDamage(float amount)
     {
         if (!IsAvailable) return;
         durability = Mathf.Max(0f, durability - Mathf.Max(0f, amount));
         UpdateFeedback();
+
         if (durability <= 0f)
         {
             gameObject.SetActive(false);
             Destroy(gameObject);
         }
     }
+
 
     private void UpdateFeedback()
     {

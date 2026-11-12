@@ -18,8 +18,10 @@ public class Agent : MonoBehaviour
         if (TryGetComponent(out Collider shape))
             BodyRadius = Mathf.Max(shape.bounds.extents.x, shape.bounds.extents.z);
         sensor = GetComponent<ProximitySensor>();
+
         if (sensor == null) sensor = gameObject.AddComponent<ProximitySensor>();
         feedback = GetComponent<AgentFeedback>();
+        
         if (feedback == null) feedback = gameObject.AddComponent<AgentFeedback>();
     }
 
@@ -35,6 +37,7 @@ public class Agent : MonoBehaviour
         return direction.normalized * speed;
     }
 
+    // Estima la posicion futura usando la velocidad del objetivo.
     public Vector3 PredictPosition(Agent target, float speed)
     {
         float distance = Vector3.Distance(transform.position, target.transform.position);
@@ -46,6 +49,7 @@ public class Agent : MonoBehaviour
     {
         Vector3 position = transform.position;
         Vector3 nextPosition = position + velocity * Time.deltaTime;
+
         if (Bounds.Instance != null)
             nextPosition = Bounds.Instance.Clamp(nextPosition, BodyRadius);
 
@@ -54,24 +58,29 @@ public class Agent : MonoBehaviour
         {
             for (int pass = 0; pass < 2; pass++)
             {
+
                 foreach (Collider hit in Physics.OverlapSphere(nextPosition, BodyRadius * 2f + 1f))
                 {
                     Agent other = hit.GetComponentInParent<Agent>();
                     InterestPoint point = hit.GetComponentInParent<InterestPoint>();
                     if (other == this || (other == null && point == null)) continue;
+
                     Vector3 center = other != null ? other.transform.position : point.transform.position;
                     float radius = other != null ? other.BodyRadius : point.BodyRadius;
                     Vector3 offset = nextPosition - center;
                     offset.y = 0f;
                     float distance = offset.magnitude;
                     float minimum = BodyRadius + radius + 0.02f;
+
                     if (distance >= minimum) continue;
+
                     if (distance < 0.001f)
                     {
                         offset = position - center;
                         offset.y = 0f;
                         if (offset.sqrMagnitude < 0.0001f) offset = transform.right;
                     }
+
                     nextPosition = center + offset.normalized * minimum;
                     nextPosition.y = position.y;
                 }
@@ -79,9 +88,11 @@ public class Agent : MonoBehaviour
                     nextPosition = Bounds.Instance.Clamp(nextPosition, BodyRadius);
             }
         }
+
         transform.position = nextPosition;
         _velocity = (nextPosition - position) / Mathf.Max(Time.deltaTime, 0.0001f);
         if (_velocity.sqrMagnitude > 0.001f) transform.forward = _velocity.normalized;
+
     }
 
     public void StopMoving() => _velocity = Vector3.zero;

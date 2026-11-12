@@ -5,12 +5,15 @@ public class HunterRestState : State<HunterAgent.HunterState>
     public override void Enter()
     {
         hunter.StopMoving();
-        hunter.SetFeedback(HunterAgent.HunterState.Rest, null, "Recargando energia");
+         hunter.SetFeedback(HunterAgent.HunterState.Rest, null, "Recargando energia");
+
     }
     public override void Update()
     {
+
         hunter.Energy.Recharge();
         if (hunter.Energy.IsFull) _fsm.ChangeState(HunterAgent.HunterState.Patrol);
     }
+    
     public override void Exit() { }
 }

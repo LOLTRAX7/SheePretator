@@ -6,6 +6,10 @@ public class HunterGatherState : State<HunterAgent.HunterState>
     private BoidAgent target;
     private float timer;
     public HunterGatherState(HunterAgent hunter) => this.hunter = hunter;
+
+
+
+
     public override void Enter()
     {
         target = hunter.FindNearestEliminatedBoid();
@@ -20,16 +24,20 @@ public class HunterGatherState : State<HunterAgent.HunterState>
             _fsm.ChangeState(HunterAgent.HunterState.Patrol);
             return;
         }
+        
         if (Vector3.Distance(hunter.transform.position, target.transform.position) > hunter.GatherInteractionRadius)
         {
             timer = 0f;
             hunter.MoveTowards(target.transform.position);
             return;
         }
+
         hunter.StopMoving();
         hunter.SetFeedback(HunterAgent.HunterState.Gather, target, "Recolectando");
         timer += Time.deltaTime;
+
         if (timer < hunter.GatherDuration) return;
+
         target.OnGathered(hunter.BoidRespawnDelay);
         Debug.Log($"[Cazador] Recoleccion completa: {target.name}.");
         _fsm.ChangeState(HunterAgent.HunterState.Patrol);
