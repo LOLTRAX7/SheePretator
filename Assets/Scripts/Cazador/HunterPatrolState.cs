@@ -2,39 +2,53 @@ using UnityEngine;
 
 public class HunterPatrolState : State<HunterAgent.HunterState>
 {
-    private readonly HunterAgent _hunter;
-    private int _index;
-    private int _direction = 1;
-    public HunterPatrolState(HunterAgent hunter) => _hunter = hunter;
-    public override void Enter() => _hunter.SetFeedback(HunterAgent.HunterState.Patrol, null, "Patrullando");
+    private readonly HunterAgent hunter;
+    
+    private int index;
+    private int direction = 1;
+    private float spawnTimer;
+    public HunterPatrolState(HunterAgent hunter) => this.hunter = hunter;
+    public override void Enter() => hunter.SetFeedback(HunterAgent.HunterState.Patrol);
+
     public override void Update()
     {
-        if (_hunter.FindNearestEliminatedBoid() != null)
+        if (hunter.FindNearestEliminatedBoid() != null)
         {
             _fsm.ChangeState(HunterAgent.HunterState.Gather);
             return;
         }
-        if (_hunter.IsAttackReady && _hunter.FindNearestLiveBoid() != null)
+
+        if (hunter.IsAttackReady && hunter.FindNearestLiveBoid() != null)
         {
             _fsm.ChangeState(HunterAgent.HunterState.Hunt);
             return;
         }
-        _hunter.FoodSpawner.TickPatrol();
-        var waypoints = _hunter.Waypoints;
-        if (waypoints.Count == 0) { _hunter.StopMoving(); return; }
-        _index = Mathf.Clamp(_index, 0, waypoints.Count - 1);
-        Transform waypoint = waypoints[_index];
+        Patrol();
+
+        spawnTimer += Time.deltaTime;
+        if (spawnTimer < hunter.PoiSpawnInterval) return;
+        spawnTimer = 0f;
+        hunter.SpawnInterestPointAtCurrentPosition();
+    }
+    private void Patrol()
+    {
+        if (hunter.Waypoints.Count == 0) return;
+        index = Mathf.Clamp(index, 0, hunter.Waypoints.Count - 1);
+        Transform waypoint = hunter.Waypoints[index];
+
         if (waypoint != null)
         {
-            _hunter.MoveTowards(waypoint.position);
-            if (Agent.PlanarDistance(_hunter.transform.position, waypoint.position) > _hunter.WaypointArrivalDistance) return;
+            hunter.MoveTowards(waypoint.position);
+            if (Vector3.Distance(hunter.transform.position, waypoint.position) > hunter.WaypointArrivalDistance) return;
         }
-        if (_hunter.PingPongPatrol && waypoints.Count > 1)
+
+        if (!hunter.PingPongPatrol) index = (index + 1) % hunter.Waypoints.Count;
+
+        else
         {
-            if (_index + _direction >= waypoints.Count || _index + _direction < 0) _direction *= -1;
-            _index += _direction;
+            if (index + direction < 0 || index + direction >= hunter.Waypoints.Count) direction *= -1;
+            index = Mathf.Clamp(index + direction, 0, hunter.Waypoints.Count - 1);
         }
-        else _index = (_index + 1) % waypoints.Count;
     }
-    public override void Exit() => _hunter.StopMoving();
+    public override void Exit() => hunter.StopMoving();
 }

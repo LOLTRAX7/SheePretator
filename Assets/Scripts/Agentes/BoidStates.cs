@@ -1,94 +1,129 @@
 using UnityEngine;
 
-// Todos los cambios de estado del boid se solicitan desde estos estados.
-public abstract class BoidLivingState : State<BoidAgent.BoidState>
+public abstract class BoidLivingState : State<BoidState>
 {
+
+
     protected readonly BoidAgent boid;
-    private readonly BoidAgent.BoidState _id;
-    protected BoidLivingState(BoidAgent agent, BoidAgent.BoidState id) { boid = agent; _id = id; }
-    public override void Enter() => boid.EnterState(_id);
-    public override void Exit() { }
+    protected BoidLivingState(BoidAgent boid) => this.boid = boid;
+
+    public override void Enter() { }
+    public override void Exit(){ }
+
+    // Morir y huir tienen prioridad sobre buscar comida.
+    protected bool ChangeIfNeeded()
+    {
+        BoidState next = BoidState.Flocking;
+
+        if (boid.IsEliminated) next = BoidState.Dead;
+        else if (boid.Threat != null) next = BoidState.Evade;
+        else if (boid.AtPoint) next = BoidState.Consume;
+        else if (boid.HasPoint) next = BoidState.SeekObject;
+        if (next == boid.CurrentState) return false;
+
+        _fsm.ChangeState(next);
+
+        return true;
+    }
+}
+public class BoidFlockingState : BoidLivingState
+{
+    public BoidFlockingState(BoidAgent boid) : base(boid) { }
 
     public override void Update()
     {
-        if (boid.IsEliminated)
-        {
-            _fsm.ChangeState(BoidAgent.BoidState.Dead);
-            return;
-        }
-        boid.Sense();
-        // Prioridad: Dead > Evade > Consume > SeekObject > Flocking.
-        BoidAgent.BoidState next = boid.Threat != null ? BoidAgent.BoidState.Evade
-            : boid.Food == null ? BoidAgent.BoidState.Flocking
-            : boid.Steering.AtFood(boid.Food) ? BoidAgent.BoidState.Consume
-            : BoidAgent.BoidState.SeekObject;
-        if (next != _id) { _fsm.ChangeState(next); return; }
-        Act();
+        if (ChangeIfNeeded()) return;
+        boid.Flock();
     }
-    protected abstract void Act();
-}
 
-public class BoidFlockingState : BoidLivingState
-{
-    public BoidFlockingState(BoidAgent boid) : base(boid, BoidAgent.BoidState.Flocking) { }
-    protected override void Act() => boid.Move(boid.Steering.Flocking());
 }
 
 public class BoidEvadeState : BoidLivingState
 {
-    public BoidEvadeState(BoidAgent boid) : base(boid, BoidAgent.BoidState.Evade) { }
-    protected override void Act() => boid.Move(boid.Steering.Evade(boid.Threat) + boid.Steering.Separation());
+   
+    public BoidEvadeState(BoidAgent boid) : base(boid) { }
+    
+    public override void Update()
+    {
+        if (ChangeIfNeeded()) return;
+        boid.EvadeThreat();
+    }
 }
 
 public class BoidSeekObjectState : BoidLivingState
 {
-    public BoidSeekObjectState(BoidAgent boid) : base(boid, BoidAgent.BoidState.SeekObject) { }
-    protected override void Act() => boid.Move(boid.Steering.Arrive(boid.Food) + boid.Steering.Separation());
+    public BoidSeekObjectState(BoidAgent boid) : base(boid) { }
+    public override void Update()
+    {
+        if (ChangeIfNeeded()) return;
+        boid.ArriveAtPoint();
+    }
 }
+
 
 public class BoidConsumeState : BoidLivingState
 {
-    private float _timer;
-    public BoidConsumeState(BoidAgent boid) : base(boid, BoidAgent.BoidState.Consume) { }
-    public override void Enter() { base.Enter(); boid.StopMoving(); _timer = 0f; }
-    protected override void Act()
+    private float timer;
+    public BoidConsumeState(BoidAgent boid) : base(boid) { }
+
+    public override void Enter()
     {
+        timer = 0f;
         boid.StopMoving();
-        _timer += Time.deltaTime;
-        if (_timer < boid.HarvestInterval) return;
-        _timer = 0f;
-        boid.Food.TakeDamage(boid.HarvestDamage);
+    }
+
+
+    public override void Update()
+    {
+        if (ChangeIfNeeded()) return;
+        boid.StopMoving();
+        timer += Time.deltaTime;
+
+        // Consume el objeto por intervalos.
+        if (timer < boid.HarvestInterval) return;
+        timer = 0f;
+        boid.ConsumePoint();
     }
 }
 
-public class BoidDeadState : State<BoidAgent.BoidState>
+public class BoidDeadState : State<BoidState>
 {
-    private readonly BoidAgent _boid;
-    public BoidDeadState(BoidAgent boid) => _boid = boid;
-    public override void Enter() { _boid.EnterState(BoidAgent.BoidState.Dead); _boid.StopMoving(); }
+    private readonly BoidAgent boid;
+    public BoidDeadState(BoidAgent boid) => this.boid = boid;
+    public override void Enter() => boid.StopMoving();
+
     public override void Update()
     {
-        if (_boid.Gathered) _fsm.ChangeState(BoidAgent.BoidState.Respawn);
+
+        // Espera inmovil hasta que el cazador la recolecta.
+        if (boid.WasGathered) _fsm.ChangeState(BoidState.Respawn);
+
     }
+
     public override void Exit() { }
 }
 
-public class BoidRespawnState : State<BoidAgent.BoidState>
+
+
+public class BoidRespawnState : State<BoidState>
 {
-    private readonly BoidAgent _boid;
-    private float _timer;
-    public BoidRespawnState(BoidAgent boid) => _boid = boid;
+    private readonly BoidAgent boid;
+    private float timer;
+    public BoidRespawnState(BoidAgent boid) => this.boid = boid;
+
     public override void Enter()
     {
-        _boid.EnterState(BoidAgent.BoidState.Respawn);
-        _boid.Feedback.SetVisible(false);
-        _timer = 0f;
+        timer = boid.RespawnDelay;
+        // Oculta la oveja mientras espera para reaparecer.
+        boid.Hide();
+
     }
+
     public override void Update()
     {
-        _timer += Time.deltaTime;
-        if (_timer >= _boid.RespawnDelay && _boid.TryRespawn())
-            _fsm.ChangeState(BoidAgent.BoidState.Flocking);
+        timer -= Time.deltaTime;
+        if (timer <= 0f && boid.TryRespawn()) _fsm.ChangeState(BoidState.Flocking);
     }
+
     public override void Exit() { }
 }

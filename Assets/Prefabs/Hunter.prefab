@@ -120,17 +120,15 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 90000015}
-  - component: {fileID: 90000014}
-  - component: {fileID: 90000013}
-  - component: {fileID: 90000012}
-  - component: {fileID: 90000011}
   - component: {fileID: 1131048661296537880}
   - component: {fileID: 2609598243374884770}
   - component: {fileID: 3723989713495992741}
   - component: {fileID: 7617603407507634579}
   - component: {fileID: 301618244978389381}
   - component: {fileID: 1276794461235013874}
+  - component: {fileID: 810000000000000000}
+  - component: {fileID: 810000000000000001}
+  - component: {fileID: 810000000000000002}
   m_Layer: 0
   m_Name: Hunter
   m_TagString: Untagged
@@ -272,7 +270,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 93ea2e663f2aa0c4885b0c28178f6e9d, type: 3}
   m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::HunterAgent
+  m_EditorClassIdentifier: Assembly-CSharp::HunterAgent
   moveSpeed: 8
   waypoints:
   - {fileID: 0}
@@ -284,15 +282,27 @@ MonoBehaviour:
   - {fileID: 0}
   waypointArrivalDistance: 0.4
   pingPongPatrol: 1
+  interestPointPrefab: {fileID: -6354318403352703743, guid: 0c71600183e53ae418bb4c54844420f5, type: 3}
+  poiSpawnInterval: 4
+  maxActiveInterestPoints: 5
+  interestPointPlaceDuration: 2
   perceptionRadius: 8
+  perceptionLossMargin: 3
   <TBA>k__BackingField: 2
   <RangeAttackRadius>k__BackingField: 5
   <MeleeAttackRadius>k__BackingField: 1.5
+  meleeDamage: 50
+  rangedDamage: 20
+  attackPreparationTime: 1
   gatherInteractionRadius: 1.2
   gatherDuration: 2
   boidRespawnDelay: 5
-
---- !u!114 &90000011
+  feedbackRenderer: {fileID: 3723989713495992741}
+  patrolColor: {r: 0.95976305, g: 0, b: 1, a: 1}
+  attackColor: {r: 1, g: 0, b: 0, a: 1}
+  gatherColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  showOnScreenDebug: 1
+--- !u!114 &810000000000000000
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -301,12 +311,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2066313899868212812}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e28db9bb27fc48308b14d0493b5bf0cd, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c2e22d976154a11892286c07b22004d, type: 3}
   m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::ProximitySensor
-
-
---- !u!114 &90000012
+  m_EditorClassIdentifier: Assembly-CSharp::ProximitySensor
+  interval: 0.15
+--- !u!114 &810000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -315,12 +324,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2066313899868212812}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3560a6e1163244689b94cc0e632b7b07, type: 3}
+  m_Script: {fileID: 11500000, guid: d42385c100a445cc96477498ffd2d13d, type: 3}
   m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::AgentFeedback
-
-
---- !u!114 &90000013
+  m_EditorClassIdentifier: Assembly-CSharp::AgentFeedback
+  feedbackRenderer: {fileID: 3723989713495992741}
+  showText: 1
+--- !u!114 &810000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -329,37 +338,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2066313899868212812}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70cc713b53c1448cb8d6b5fad5b8e914, type: 3}
+  m_Script: {fileID: 11500000, guid: 2fd363cb4b19447f83ac1ad71b326fdf, type: 3}
   m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::HunterEnergy
-
-
---- !u!114 &90000014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2066313899868212812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5aac87dc8f8a4d78a1809ce738c931b8, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::HunterDebugDisplay
-
-
---- !u!114 &90000015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2066313899868212812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 276f646781a042eb9d7e4dbc7cfa546c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::InterestPointSpawner
-
-  interestPointPrefab: {fileID: -6354318403352703743, guid: 0c71600183e53ae418bb4c54844420f5, type: 3}
-  poiSpawnInterval: 4
+  m_EditorClassIdentifier: Assembly-CSharp::HunterEnergy
+  maxEnergy: 18
+  drainRate: 1
+  rechargeRate: 6

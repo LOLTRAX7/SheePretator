@@ -241,7 +241,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.3826836, y: -0, z: -0, w: 0.9238795}
-  m_LocalPosition: {x: -83.7, y: 43.7, z: -52.6}
+  m_LocalPosition: {x: 0.9, y: 37.4, z: -39.5}
   m_LocalScale: {x: 1.4285713, y: 1.4285715, z: 1.4285715}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -257,8 +257,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
@@ -399,8 +399,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -607,8 +607,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_IsGlobal: 1
   priority: 0
   blendDistance: 0
@@ -671,8 +671,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 234def431d0d0884aace26a63c2c85a0, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::BoidSpawner
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoidSpawner
   boidPrefab: {fileID: 7020371896297606288, guid: 13e4776f55205774683cc454c1af5333, type: 3}
   count: 8
 --- !u!1 &1397631432
@@ -810,8 +810,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac0f915be1d979d45b54329f6a4876a0, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: SheePretator.Runtime::Bounds
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Bounds
   height: 50
   width: 70
   drawGizmos: 1
@@ -960,31 +960,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 770090795}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 1397631433}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[2]'
-      value:
+      value: 
       objectReference: {fileID: 1623051171}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[3]'
-      value:
+      value: 
       objectReference: {fileID: 1821652633}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[4]'
-      value:
+      value: 
       objectReference: {fileID: 490453703}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[5]'
-      value:
+      value: 
       objectReference: {fileID: 586294852}
     - target: {fileID: 1276794461235013874, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: 'waypoints.Array.data[6]'
-      value:
+      value: 
       objectReference: {fileID: 1498070526}
     - target: {fileID: 2066313899868212812, guid: b0055df361c3308478d0cb9cc9771483, type: 3}
       propertyPath: m_Name

@@ -3,33 +3,47 @@ using UnityEngine;
 
 public class ProximitySensor : MonoBehaviour
 {
-    [SerializeField] private LayerMask perceptionLayers = ~0;
+    [SerializeField, Min(0.02f)] private float interval = 0.15f;
 
-    public List<T> Detect<T>(float radius) where T : Component
+    private float nextScan;
+
+    public List<BoidAgent> Boids { get; } = new List<BoidAgent>();
+    public List<HunterAgent> Hunters { get; } = new List<HunterAgent>();
+    public List<InterestPoint> Points { get; } = new List<InterestPoint>();
+
+
+    // Solo consulta objetos cercanos, respetando el intervalo.
+    public void Scan(float radius)
     {
-        var detected = new List<T>();
-        // Consulta espacial local, sin registros globales de agentes.
-        foreach (Collider hit in Physics.OverlapSphere(transform.position, radius,
-                     perceptionLayers, QueryTriggerInteraction.Ignore))
+        if (Time.time < nextScan) return;
+        nextScan = Time.time + interval;
+
+        Boids.Clear();
+        Hunters.Clear();
+        Points.Clear();
+
+        foreach (Collider hit in Physics.OverlapSphere(transform.position, radius))
         {
-            T item = hit.GetComponentInParent<T>();
-            if (item == null || item.gameObject == gameObject || detected.Contains(item)) continue;
-            if (Agent.PlanarDistance(transform.position, item.transform.position) <= radius)
-                detected.Add(item);
+
+            Agent agent = hit.GetComponentInParent<Agent>();
+
+            if (agent != null && agent.gameObject != gameObject)
+            {
+
+                if (agent is BoidAgent boid && !Boids.Contains(boid)) Boids.Add(boid);
+
+                if (agent is HunterAgent hunter && !Hunters.Contains(hunter)) Hunters.Add(hunter);
+
+            }
+
+            InterestPoint point = hit.GetComponentInParent<InterestPoint>();
+            
+            if (point != null && !Points.Contains(point)) Points.Add(point);
         }
-        return detected;
     }
-
-    public T Nearest<T>(float radius) where T : Component
+    public bool InRange(Component target, float radius)
     {
-        T nearest = null;
-        foreach (T item in Detect<T>(radius))
-        {
-            float distance = Agent.PlanarDistance(transform.position, item.transform.position);
-            if (distance > radius) continue;
-            radius = distance;
-            nearest = item;
-        }
-        return nearest;
+            return target != null && target.gameObject.activeInHierarchy &&
+            (target.transform.position - transform.position).sqrMagnitude <= radius * radius;
     }
 }

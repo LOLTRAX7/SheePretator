@@ -2,40 +2,49 @@ using UnityEngine;
 
 public class InterestPoint : MonoBehaviour
 {
-    // Solo un contador para el límite de generación; no permite localizar objetos.
-    public static int ActiveCount { get; private set; }
     [SerializeField, Min(1f)] private float maxDurability = 30f;
-    [SerializeField] private Renderer feedbackRenderer;
-    private float _currentDurability;
-    private bool _destroyed;
-    private MaterialPropertyBlock _properties;
-    public float Radius => Mathf.Max(GetComponent<Collider>().bounds.extents.x, GetComponent<Collider>().bounds.extents.z);
+    private float durability;
+    private AgentFeedback feedback;
+    public static int ActiveCount { get; private set; }
+    public bool IsAvailable => isActiveAndEnabled && durability > 0f;
+    public float BodyRadius { get; private set; } = 0.5f;
+
+
+    private void Awake()
+    {
+        feedback = GetComponent<AgentFeedback>();
+        
+        if (feedback == null) feedback = gameObject.AddComponent<AgentFeedback>();
+        if (TryGetComponent(out Collider shape))
+            BodyRadius = Mathf.Max(shape.bounds.extents.x, shape.bounds.extents.z);
+    }
+
     private void OnEnable()
     {
         ActiveCount++;
-        _currentDurability = maxDurability;
-        _destroyed = false;
-        _properties = new MaterialPropertyBlock();
-        if (feedbackRenderer == null) feedbackRenderer = GetComponent<Renderer>();
+        durability = maxDurability;
         UpdateFeedback();
     }
+
+
     private void OnDisable() => ActiveCount--;
     public void TakeDamage(float amount)
     {
-        if (_destroyed) return;
-        _currentDurability -= Mathf.Max(0f, amount);
+        if (!IsAvailable) return;
+        durability = Mathf.Max(0f, durability - Mathf.Max(0f, amount));
         UpdateFeedback();
-        if (_currentDurability > 0f) return;
-        _destroyed = true;
-        gameObject.SetActive(false);
-        Destroy(gameObject);
+
+        if (durability <= 0f)
+        {
+            gameObject.SetActive(false);
+            Destroy(gameObject);
+        }
     }
+
+
     private void UpdateFeedback()
     {
-        if (feedbackRenderer == null) return;
-        Color color = Color.Lerp(Color.red, Color.green, Mathf.Clamp01(_currentDurability / maxDurability));
-        _properties.SetColor("_BaseColor", color);
-        _properties.SetColor("_Color", color);
-        feedbackRenderer.SetPropertyBlock(_properties);
+        feedback.Set($"Objeto: {durability:0}/{maxDurability:0}",
+            Color.Lerp(Color.red, Color.green, durability / maxDurability));
     }
 }

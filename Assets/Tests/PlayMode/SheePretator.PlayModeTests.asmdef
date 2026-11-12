@@ -1,6 +1,0 @@
-{
-  "name": "SheePretator.PlayModeTests",
-  "references": ["SheePretator.Runtime"],
-  "optionalUnityReferences": ["TestAssemblies"],
-  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
-}

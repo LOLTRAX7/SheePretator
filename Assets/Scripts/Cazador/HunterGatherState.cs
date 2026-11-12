@@ -2,36 +2,46 @@ using UnityEngine;
 
 public class HunterGatherState : State<HunterAgent.HunterState>
 {
-    private readonly HunterAgent _hunter;
-    private BoidAgent _target;
-    private float _timer;
-    public HunterGatherState(HunterAgent hunter) => _hunter = hunter;
+    private readonly HunterAgent hunter;
+    private BoidAgent target;
+    private float timer;
+    public HunterGatherState(HunterAgent hunter) => this.hunter = hunter;
+
+
+
+
     public override void Enter()
     {
-        _target = _hunter.FindNearestEliminatedBoid();
-        _timer = 0f;
-        _hunter.SetFeedback(HunterAgent.HunterState.Gather, _target, "Yendo a recolectar");
+        target = hunter.FindNearestEliminatedBoid();
+        timer = 0f;
+        hunter.SetFeedback(HunterAgent.HunterState.Gather, target, "Yendo a recolectar");
     }
+
     public override void Update()
     {
-        if (_target == null || !_target.IsPendingGather || !_target.isActiveAndEnabled)
+        if (target == null || !target.gameObject.activeInHierarchy || !target.IsPendingGather)
         {
             _fsm.ChangeState(HunterAgent.HunterState.Patrol);
             return;
         }
-        if (Agent.PlanarDistance(_hunter.transform.position, _target.transform.position) > _hunter.GatherInteractionRadius)
+        
+        if (Vector3.Distance(hunter.transform.position, target.transform.position) > hunter.GatherInteractionRadius)
         {
-            _timer = 0f;
-            _hunter.MoveTowards(_target.transform.position);
+            timer = 0f;
+            hunter.MoveTowards(target.transform.position);
             return;
         }
-        _hunter.StopMoving();
-        _timer += Time.deltaTime;
-        _hunter.SetFeedback(HunterAgent.HunterState.Gather, _target, "Recolectando");
-        if (_timer < _hunter.GatherDuration) return;
-        _target.OnGathered(_hunter.BoidRespawnDelay);
-        _hunter.RecordGather();
+
+        hunter.StopMoving();
+        hunter.SetFeedback(HunterAgent.HunterState.Gather, target, "Recolectando");
+        timer += Time.deltaTime;
+
+        if (timer < hunter.GatherDuration) return;
+
+        // Al terminar la recoleccion, la oveja puede reaparecer.
+        target.OnGathered(hunter.BoidRespawnDelay);
         _fsm.ChangeState(HunterAgent.HunterState.Patrol);
     }
-    public override void Exit() => _hunter.StopMoving();
+
+    public override void Exit() => hunter.StopMoving();
 }
